@@ -40,9 +40,12 @@ def main():
     # Sidebar Filters
     st.sidebar.header("Search Filters")
     
+    # Exclude filters for 'First_sales' and 'Years_of_Experience'
+    columns_to_filter = [col for col in df.columns if col not in ['First_sales', 'Years_of_Experience']]
+    
     # Create a search box for each column dynamically
     search_terms = {}
-    for column in df.columns:
+    for column in columns_to_filter:
         search_terms[column] = st.sidebar.text_input(f"Search by {column}", "")
     
     # Apply filters
