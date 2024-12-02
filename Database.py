@@ -29,14 +29,14 @@ def main():
     # Load data
     df = load_data()
 
-    # # Fix any numeric-like Year column to ensure it doesn't cause errors
-    # df["Year"] = df["Year"].astype(str)  # Convert Year to string, if necessary
+    # Fix any numeric-like Year column to ensure it doesn't cause errors
+    df["Year"] = df["Year"].astype(str)  # Convert Year to string, if necessary
     
     # Create sidebar for search inputs
     st.sidebar.header("Search Filters")
     
-    # # Dropdown for Year filter
-    # year_filter = st.sidebar.multiselect("Filter by Year", options=df["Year"].unique(), default=df["Year"].unique())
+    # Dropdown for Year filter
+    year_filter = st.sidebar.multiselect("Filter by Year", options=df["Year"].unique(), default=df["Year"].unique())
     
     # Create a search box for each column except Year
     search_terms = {}
