@@ -1,72 +1,59 @@
-import streamlit as st
 import pandas as pd
-from fuzzywuzzy import process
-import Levenshtein  # Ensures fuzzywuzzy uses python-Levenshtein for better performance
 
-# Function to load and preprocess the dataset
-@st.cache_data
+# Load the dataset
 def load_data():
     # Load the Excel file
-    df = pd.read_excel("final_st_data.xlsx")
+    df = pd.read_excel("/Users/arpitalonakadi/Downloads/final_st_data.xlsx")
     
-    # Ensure unique column names by appending a suffix to duplicates
-    df.columns = pd.Series(df.columns).apply(lambda x: x if df.columns.tolist().count(x) == 1 else f"{x}_{df.columns.tolist().count(x)}")
-    
-    # Log the updated column names for debugging
-    st.write("Column Names After Deduplication:", df.columns.tolist())
+    # Ensure correct column names
+    df.columns = ['Country', 'Company', 'Type_of_AM process', 'Type_of_Material', 
+                  'Category', 'First_sales', 'Years_of_Experience', 'Company_type', 
+                  'Description']
     return df
 
-def fuzzy_filter(df, column, search_term, limit=10):
+# Function to filter the DataFrame based on search criteria
+def search_data(df, search_criteria):
     """
-    Perform fuzzy search on a specific column of the DataFrame.
+    Filters the DataFrame based on a dictionary of search criteria.
+    
+    Parameters:
+        df (DataFrame): The dataset to filter.
+        search_criteria (dict): A dictionary where keys are column names and values are search terms.
+        
+    Returns:
+        DataFrame: Filtered DataFrame.
     """
-    if not search_term:
-        return df
-    matches = process.extract(search_term, df[column], limit=limit)
-    matched_indices = [df.index[df[column] == match[0]][0] for match in matches if match[1] > 50]  # Threshold of 50
-    return df.loc[matched_indices]
-
-def main():
-    st.set_page_config(layout="wide")  # Set the layout to wide
-    st.title("Searchable Additive Manufacturing Database")
-    
-    # Load and preprocess the dataset
-    df = load_data()
-
-    # Sidebar Filters
-    st.sidebar.header("Filters by Column")
-    
-    # Fuzzy Search Filters for Text Columns
-    country_filter = st.sidebar.text_input("Search by Country")
-    company_filter = st.sidebar.text_input("Search by Company")
-    am_process_filter = st.sidebar.text_input("Search by AM Process Type")
-    material_filter = st.sidebar.text_input("Search by Material Type")
-    category_filter = st.sidebar.text_input("Search by Category (Primary)")
-    company_type_filter = st.sidebar.text_input("Search by Category (Type of Company)")
-    description_filter = st.sidebar.text_input("Search by Description")
-    
-    # Apply Filters
     filtered_df = df.copy()
+    for column, term in search_criteria.items():
+        if term:  # Only apply the filter if a search term is provided
+            filtered_df = filtered_df[filtered_df[column].astype(str).str.contains(term, case=False, na=False)]
+    return filtered_df
+
+# Main logic for creating the searchable database
+def main():
+    # Load data
+    df = load_data()
     
-    # Apply fuzzy filters for text-based columns
-    if country_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Country", country_filter)
-    if company_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Company", company_filter)
-    if am_process_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type of AM process", am_process_filter)
-    if material_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type of Material", material_filter)
-    if category_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Category", category_filter)  # First "Category"
-    if company_type_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Category_2", company_type_filter)  # Second "Category"
-    if description_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Description", description_filter)
+    # Display all available columns
+    print("Available Columns for Search:")
+    print(df.columns.tolist())
     
-    # Display Results
-    st.subheader("Filtered Results")
-    st.dataframe(filtered_df, use_container_width=True)
+    # User input for search criteria
+    print("\nEnter search terms for the following fields (press Enter to skip a field):")
+    search_criteria = {}
+    for column in df.columns:
+        term = input(f"Search term for {column}: ").strip()
+        search_criteria[column] = term if term else None
+    
+    # Filter the data
+    filtered_df = search_data(df, search_criteria)
+    
+    # Display results
+    print("\nFiltered Results:")
+    if not filtered_df.empty:
+        print(filtered_df)
+    else:
+        print("No results match your search criteria.")
 
 if __name__ == "__main__":
     main()
