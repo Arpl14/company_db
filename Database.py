@@ -3,8 +3,18 @@ import pandas as pd
 from fuzzywuzzy import process
 import Levenshtein  # Ensures fuzzywuzzy uses python-Levenshtein for better performance
 
-# Load the dataset (replace with your new dataset file)
-df = pd.read_excel("final_st_data.xlsx")
+# Function to load and preprocess the dataset
+@st.cache_data
+def load_data():
+    # Load the Excel file
+    df = pd.read_excel("final_st_data.xlsx")
+    
+    # Rename duplicate columns by appending a suffix
+    df.columns = pd.io.parsers.ParserBase({'names': df.columns})._maybe_dedup_names(df.columns)
+    
+    # Log the updated column names for debugging
+    st.write("Column Names After Deduplication:", df.columns.tolist())
+    return df
 
 def fuzzy_filter(df, column, search_term, limit=10):
     """
@@ -20,6 +30,9 @@ def main():
     st.set_page_config(layout="wide")  # Set the layout to wide
     st.title("Searchable Additive Manufacturing Database")
     
+    # Load and preprocess the dataset
+    df = load_data()
+
     # Sidebar Filters
     st.sidebar.header("Filters by Column")
     
@@ -28,23 +41,9 @@ def main():
     company_filter = st.sidebar.text_input("Search by Company")
     am_process_filter = st.sidebar.text_input("Search by AM Process Type")
     material_filter = st.sidebar.text_input("Search by Material Type")
-    category_filter = st.sidebar.text_input("Search by Category")
-    company_type_filter = st.sidebar.text_input("Search by Company Type")
+    category_filter = st.sidebar.text_input("Search by Category (Primary)")
+    company_type_filter = st.sidebar.text_input("Search by Category (Type of Company)")
     description_filter = st.sidebar.text_input("Search by Description")
-    
-    # # Exact Match Filters for Numeric Columns
-    # first_sales_filter = st.sidebar.slider(
-    #     "Filter by First Sales Year", 
-    #     int(df["first_sales"].min()), 
-    #     int(df["first_sales"].max()), 
-    #     (int(df["first_sales"].min()), int(df["first_sales"].max()))
-    # )
-    # years_experience_filter = st.sidebar.slider(
-    #     "Filter by Years of Experience", 
-    #     int(df["years_of_experience"].min()), 
-    #     int(df["years_of_experience"].max()), 
-    #     (int(df["years_of_experience"].min()), int(df["years_of_experience"].max()))
-    # )
     
     # Apply Filters
     filtered_df = df.copy()
@@ -55,25 +54,15 @@ def main():
     if company_filter:
         filtered_df = fuzzy_filter(filtered_df, "Company", company_filter)
     if am_process_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type fo AM process", am_process_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Type of AM process", am_process_filter)
     if material_filter:
         filtered_df = fuzzy_filter(filtered_df, "Type of Material", material_filter)
     if category_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Category", category_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Category", category_filter)  # First "Category"
     if company_type_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type of company", company_type_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Category.1", company_type_filter)  # Second "Category"
     if description_filter:
         filtered_df = fuzzy_filter(filtered_df, "Description", description_filter)
-    
-    # # Apply numeric filters
-    # filtered_df = filtered_df[
-    #     (filtered_df["first_sales"] >= first_sales_filter[0]) & 
-    #     (filtered_df["first_sales"] <= first_sales_filter[1])
-    # ]
-    # filtered_df = filtered_df[
-    #     (filtered_df["years_of_experience"] >= years_experience_filter[0]) & 
-    #     (filtered_df["years_of_experience"] <= years_experience_filter[1])
-    # ]
     
     # Display Results
     st.subheader("Filtered Results")
