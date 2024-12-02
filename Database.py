@@ -4,7 +4,7 @@ import pandas as pd
 # Load the dataset
 @st.cache_data
 def load_data():
-    return pd.read_excel("Combined Data.xlsx")
+    return pd.read_excel("final_st_data.xlsx")
 
 def filter_dataframe(df, column, search_term):
     """
