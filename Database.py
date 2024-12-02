@@ -3,9 +3,8 @@ import pandas as pd
 from fuzzywuzzy import process
 import Levenshtein  # Ensures fuzzywuzzy uses python-Levenshtein for better performance
 
-
-df = pd.read_excel("ICAM_2023_2022_2021.xlsx")
-
+# Load the dataset (replace with your new dataset file)
+df = pd.read_excel("Combined Data.xlsx")
 
 def fuzzy_filter(df, column, search_term, limit=10):
     """
@@ -17,49 +16,67 @@ def fuzzy_filter(df, column, search_term, limit=10):
     matched_indices = [df.index[df[column] == match[0]][0] for match in matches if match[1] > 50]  # Threshold of 50
     return df.loc[matched_indices]
 
-
 def main():
     st.set_page_config(layout="wide")  # Set the layout to wide
-    st.title("Searchable ICAM Database")
+    st.title("Searchable Additive Manufacturing Database")
     
     # Sidebar Filters
     st.sidebar.header("Filters by Column")
     
     # Fuzzy Search Filters for Text Columns
-    symposium_filter = st.sidebar.text_input("Search by Symposium")
-    title_filter = st.sidebar.text_input("Search by Title")
-    type_filter = st.sidebar.text_input("Search by Type")
-    organization_filter = st.sidebar.text_input("Search by Organization")
-    speaker_filter = st.sidebar.text_input("Search by Speaker")
-    speaker_category_filter = st.sidebar.text_input("Search by Speaker Category")
+    country_filter = st.sidebar.text_input("Search by Country")
+    company_filter = st.sidebar.text_input("Search by Company")
+    am_process_filter = st.sidebar.text_input("Search by AM Process Type")
+    material_filter = st.sidebar.text_input("Search by Material Type")
+    category_filter = st.sidebar.text_input("Search by Category")
+    company_type_filter = st.sidebar.text_input("Search by Company Type")
+    description_filter = st.sidebar.text_input("Search by Description")
     
-    # Exact Match/Multiselect Filter for Numeric Columns
-    year_filter = st.sidebar.multiselect("Filter by Year", options=df["Year"].unique(), default=df["Year"].unique())
+    # Exact Match Filters for Numeric Columns
+    first_sales_filter = st.sidebar.slider(
+        "Filter by First Sales Year", 
+        int(df["first_sales"].min()), 
+        int(df["first_sales"].max()), 
+        (int(df["first_sales"].min()), int(df["first_sales"].max()))
+    )
+    years_experience_filter = st.sidebar.slider(
+        "Filter by Years of Experience", 
+        int(df["years_of_experience"].min()), 
+        int(df["years_of_experience"].max()), 
+        (int(df["years_of_experience"].min()), int(df["years_of_experience"].max()))
+    )
     
     # Apply Filters
     filtered_df = df.copy()
     
     # Apply fuzzy filters for text-based columns
-    if symposium_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Symposium", symposium_filter)
-    if title_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Title", title_filter)
-    if type_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type", type_filter)
-    if organization_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Organization", organization_filter)
-    if speaker_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Speaker", speaker_filter)
-    if speaker_category_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Speaker Category", speaker_category_filter)
+    if country_filter:
+        filtered_df = fuzzy_filter(filtered_df, "country", country_filter)
+    if company_filter:
+        filtered_df = fuzzy_filter(filtered_df, "company", company_filter)
+    if am_process_filter:
+        filtered_df = fuzzy_filter(filtered_df, "type_of_am_process", am_process_filter)
+    if material_filter:
+        filtered_df = fuzzy_filter(filtered_df, "type_of_material", material_filter)
+    if category_filter:
+        filtered_df = fuzzy_filter(filtered_df, "category", category_filter)
+    if company_type_filter:
+        filtered_df = fuzzy_filter(filtered_df, "type_of_company", company_type_filter)
+    if description_filter:
+        filtered_df = fuzzy_filter(filtered_df, "description", description_filter)
     
-    # Apply exact match filter for Year
-    filtered_df = filtered_df[filtered_df["Year"].isin(year_filter)]
+    # Apply numeric filters
+    filtered_df = filtered_df[
+        (filtered_df["first_sales"] >= first_sales_filter[0]) & 
+        (filtered_df["first_sales"] <= first_sales_filter[1])
+    ]
+    filtered_df = filtered_df[
+        (filtered_df["years_of_experience"] >= years_experience_filter[0]) & 
+        (filtered_df["years_of_experience"] <= years_experience_filter[1])
+    ]
     
     # Display Results
     st.subheader("Filtered Results")
-    
-    # Make table wider
     st.dataframe(filtered_df, use_container_width=True)
 
 if __name__ == "__main__":
