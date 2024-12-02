@@ -1,5 +1,0 @@
-streamlit
-pandas
-openpyxl
-fuzzywuzzy[speedup]  # Ensures python-Levenshtein is used for better performance
-python-Levenshtein
