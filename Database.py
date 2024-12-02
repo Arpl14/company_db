@@ -3,20 +3,32 @@ import pandas as pd
 from fuzzywuzzy import process
 import Levenshtein  # Ensures fuzzywuzzy uses python-Levenshtein for better performance
 
-# Load the dataset
-df = pd.read_excel("Combined Data.xlsx")
+# Function to load the dataset
+@st.cache_data
+def load_data():
+    # Replace with the path to your file
+    file_path = "Combined Data.xlsx"
+    try:
+        df = pd.read_excel(file_path)
+        # Ensure unique column names and rename if necessary
+        df.columns = [
+            "AM Process", 
+            "Type of Material", 
+            "Category", 
+            "First Sales", 
+            "Years of Experience", 
+            "Type of Company",  # Rename the duplicate "Category"
+            "Description"
+        ]
+        return df
+    except Exception as e:
+        st.error(f"Error loading file: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame if there's an error
 
+# Fuzzy filter function for text columns
 def fuzzy_filter(df, column, search_term, limit=10, threshold=50):
     """
     Perform fuzzy search on a specific column of the DataFrame.
-    Args:
-        df (pd.DataFrame): DataFrame to filter.
-        column (str): Column to apply the fuzzy search on.
-        search_term (str): Term to search for.
-        limit (int): Max number of results to return.
-        threshold (int): Minimum similarity score to include matches.
-    Returns:
-        pd.DataFrame: Filtered DataFrame.
     """
     if not search_term:
         return df
@@ -27,9 +39,16 @@ def fuzzy_filter(df, column, search_term, limit=10, threshold=50):
     matched_indices = [df.index[df[column] == match[0]][0] for match in matches if match[1] >= threshold]
     return df.loc[matched_indices]
 
+# Main Streamlit app
 def main():
     st.set_page_config(layout="wide")  # Set layout to wide
     st.title("Searchable Additive Manufacturing Database")
+    
+    # Load dataset
+    df = load_data()
+    if df.empty:
+        st.error("No data loaded. Please check the dataset file.")
+        return
     
     # Sidebar Filters
     st.sidebar.header("Filters by Column")
@@ -55,17 +74,17 @@ def main():
     filtered_df = df.copy()
     
     if country_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Country", country_filter, threshold=threshold)
+        filtered_df = fuzzy_filter(filtered_df, "AM Process", country_filter, threshold=threshold)
     if company_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Company", company_filter, threshold=threshold)
+        filtered_df = fuzzy_filter(filtered_df, "Type of Material", company_filter, threshold=threshold)
     if am_process_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type fo AM process", am_process_filter, threshold=threshold)
+        filtered_df = fuzzy_filter(filtered_df, "Category", am_process_filter, threshold=threshold)
     if material_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type of Material", material_filter, threshold=threshold)
+        filtered_df = fuzzy_filter(filtered_df, "First Sales", material_filter, threshold=threshold)
     if category_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Category", category_filter, threshold=threshold)
+        filtered_df = fuzzy_filter(filtered_df, "Years of Experience", category_filter, threshold=threshold)
     if company_type_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Type of company", company_type_filter, threshold=threshold)
+        filtered_df = fuzzy_filter(filtered_df, "Type of Company", company_type_filter, threshold=threshold)
     if description_filter:
         filtered_df = fuzzy_filter(filtered_df, "Description", description_filter, threshold=threshold)
     
