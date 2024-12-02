@@ -1,6 +1,8 @@
+import streamlit as st
 import pandas as pd
 
-# Load the dataset
+# Function to load and preprocess the dataset
+@st.cache_data
 def load_data():
     # Load the Excel file
     df = pd.read_excel("final_st_data.xlsx")
@@ -9,51 +11,50 @@ def load_data():
     df.columns = ['Country', 'Company', 'Type_of_AM process', 'Type_of_Material', 
                   'Category', 'First_sales', 'Years_of_Experience', 'Company_type', 
                   'Description']
+    
     return df
 
-# Function to filter the DataFrame based on search criteria
-def search_data(df, search_criteria):
+def filter_dataframe(df, column, search_term):
     """
-    Filters the DataFrame based on a dictionary of search criteria.
-    
-    Parameters:
-        df (DataFrame): The dataset to filter.
-        search_criteria (dict): A dictionary where keys are column names and values are search terms.
-        
-    Returns:
-        DataFrame: Filtered DataFrame.
+    Filters the DataFrame for rows where the specified column contains the search term.
+    Automatically handles numeric and string columns.
     """
-    filtered_df = df.copy()
-    for column, term in search_criteria.items():
-        if term:  # Only apply the filter if a search term is provided
-            filtered_df = filtered_df[filtered_df[column].astype(str).str.contains(term, case=False, na=False)]
-    return filtered_df
+    if not search_term:
+        return df
 
-# Main logic for creating the searchable database
-def main():
-    # Load data
-    df = load_data()
-    
-    # Display all available columns
-    print("Available Columns for Search:")
-    print(df.columns.tolist())
-    
-    # User input for search criteria
-    print("\nEnter search terms for the following fields (press Enter to skip a field):")
-    search_criteria = {}
-    for column in df.columns:
-        term = input(f"Search term for {column}: ").strip()
-        search_criteria[column] = term if term else None
-    
-    # Filter the data
-    filtered_df = search_data(df, search_criteria)
-    
-    # Display results
-    print("\nFiltered Results:")
-    if not filtered_df.empty:
-        print(filtered_df)
+    # Check if the column is numeric
+    if pd.api.types.is_numeric_dtype(df[column]):
+        # Convert the search term to a number (if necessary)
+        return df[df[column].astype(str).str.contains(str(search_term), na=False)]
     else:
-        print("No results match your search criteria.")
+        # For string columns, use the str.contains() method
+        return df[df[column].str.contains(search_term, case=False, na=False)]
+
+def main():
+    st.set_page_config(layout="wide")  # Set the layout to wide
+    st.title("Searchable Additive Manufacturing Database")
+    
+    # Load dataset
+    df = load_data()
+
+    # Sidebar Filters
+    st.sidebar.header("Search Filters")
+    
+    # Create a search box for each column dynamically
+    search_terms = {}
+    for column in df.columns:
+        search_terms[column] = st.sidebar.text_input(f"Search by {column}", "")
+    
+    # Apply filters
+    filtered_df = df.copy()
+
+    for column, search_term in search_terms.items():
+        if search_term:  # Only apply filter if there's a search term
+            filtered_df = filter_dataframe(filtered_df, column, search_term)
+    
+    # Display filtered results
+    st.subheader("Filtered Results")
+    st.dataframe(filtered_df, use_container_width=True)
 
 if __name__ == "__main__":
     main()
