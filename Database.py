@@ -32,19 +32,19 @@ def main():
     company_type_filter = st.sidebar.text_input("Search by Company Type")
     description_filter = st.sidebar.text_input("Search by Description")
     
-    # Exact Match Filters for Numeric Columns
-    first_sales_filter = st.sidebar.slider(
-        "Filter by First Sales Year", 
-        int(df["first_sales"].min()), 
-        int(df["first_sales"].max()), 
-        (int(df["first_sales"].min()), int(df["first_sales"].max()))
-    )
-    years_experience_filter = st.sidebar.slider(
-        "Filter by Years of Experience", 
-        int(df["years_of_experience"].min()), 
-        int(df["years_of_experience"].max()), 
-        (int(df["years_of_experience"].min()), int(df["years_of_experience"].max()))
-    )
+    # # Exact Match Filters for Numeric Columns
+    # first_sales_filter = st.sidebar.slider(
+    #     "Filter by First Sales Year", 
+    #     int(df["first_sales"].min()), 
+    #     int(df["first_sales"].max()), 
+    #     (int(df["first_sales"].min()), int(df["first_sales"].max()))
+    # )
+    # years_experience_filter = st.sidebar.slider(
+    #     "Filter by Years of Experience", 
+    #     int(df["years_of_experience"].min()), 
+    #     int(df["years_of_experience"].max()), 
+    #     (int(df["years_of_experience"].min()), int(df["years_of_experience"].max()))
+    # )
     
     # Apply Filters
     filtered_df = df.copy()
@@ -65,15 +65,15 @@ def main():
     if description_filter:
         filtered_df = fuzzy_filter(filtered_df, "description", description_filter)
     
-    # Apply numeric filters
-    filtered_df = filtered_df[
-        (filtered_df["first_sales"] >= first_sales_filter[0]) & 
-        (filtered_df["first_sales"] <= first_sales_filter[1])
-    ]
-    filtered_df = filtered_df[
-        (filtered_df["years_of_experience"] >= years_experience_filter[0]) & 
-        (filtered_df["years_of_experience"] <= years_experience_filter[1])
-    ]
+    # # Apply numeric filters
+    # filtered_df = filtered_df[
+    #     (filtered_df["first_sales"] >= first_sales_filter[0]) & 
+    #     (filtered_df["first_sales"] <= first_sales_filter[1])
+    # ]
+    # filtered_df = filtered_df[
+    #     (filtered_df["years_of_experience"] >= years_experience_filter[0]) & 
+    #     (filtered_df["years_of_experience"] <= years_experience_filter[1])
+    # ]
     
     # Display Results
     st.subheader("Filtered Results")
