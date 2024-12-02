@@ -3,7 +3,7 @@ import pandas as pd
 # Load the dataset
 def load_data():
     # Load the Excel file
-    df = pd.read_excel("/Users/arpitalonakadi/Downloads/final_st_data.xlsx")
+    df = pd.read_excel("final_st_data.xlsx")
     
     # Ensure correct column names
     df.columns = ['Country', 'Company', 'Type_of_AM process', 'Type_of_Material', 
