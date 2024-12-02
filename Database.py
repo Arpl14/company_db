@@ -9,8 +9,8 @@ def load_data():
     # Load the Excel file
     df = pd.read_excel("final_st_data.xlsx")
     
-    # Rename duplicate columns by appending a suffix
-    df.columns = pd.io.parsers.ParserBase({'names': df.columns})._maybe_dedup_names(df.columns)
+    # Ensure unique column names by appending a suffix to duplicates
+    df.columns = pd.Series(df.columns).apply(lambda x: x if df.columns.tolist().count(x) == 1 else f"{x}_{df.columns.tolist().count(x)}")
     
     # Log the updated column names for debugging
     st.write("Column Names After Deduplication:", df.columns.tolist())
@@ -60,7 +60,7 @@ def main():
     if category_filter:
         filtered_df = fuzzy_filter(filtered_df, "Category", category_filter)  # First "Category"
     if company_type_filter:
-        filtered_df = fuzzy_filter(filtered_df, "Category.1", company_type_filter)  # Second "Category"
+        filtered_df = fuzzy_filter(filtered_df, "Category_2", company_type_filter)  # Second "Category"
     if description_filter:
         filtered_df = fuzzy_filter(filtered_df, "Description", description_filter)
     
