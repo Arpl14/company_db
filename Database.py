@@ -10,6 +10,10 @@ def load_data():
     file_path = "Combined Data.xlsx"
     try:
         df = pd.read_excel(file_path)
+        
+        # Log original column names for debugging
+        st.write("Original Column Names:", df.columns.tolist())
+        
         # Ensure unique column names and rename if necessary
         df.columns = [
             "AM Process", 
@@ -17,8 +21,11 @@ def load_data():
             "Category", 
             "First Sales", 
             "Years of Experience", 
-            "Type of Company",  # Rename the duplicate "Category"
-            "Description"
+            "Type of Company",  
+            "Description", 
+            "Extra Column 1",  # Add more names if needed
+            "Extra Column 2",  # Adjust as per the actual column count
+            "Extra Column 3"
         ]
         return df
     except Exception as e:
