@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 
 # Load the dataset
-@st.cache_data
+@st.cache_data  # Correct caching decorator
 def load_data():
-    return pd.read_excel("final_st_data.xlsx")
+    return pd.read_excel("Combined Data.xlsx")
 
 def filter_dataframe(df, column, search_term):
     """
@@ -29,31 +29,24 @@ def main():
     # Load data
     df = load_data()
 
-    # Fix any numeric-like Year column to ensure it doesn't cause errors
-    df["Year"] = df["Year"].astype(str)  # Convert Year to string, if necessary
-    
+    # Dynamically check if the "Year" column exists and process it only if it does
+    if "Year" in df.columns:
+        df["Year"] = df["Year"].astype(str)  # Convert Year to string, if necessary
+
     # Create sidebar for search inputs
     st.sidebar.header("Search Filters")
     
-    # Dropdown for Year filter
-    year_filter = st.sidebar.multiselect("Filter by Year", options=df["Year"].unique(), default=df["Year"].unique())
-    
-    # Create a search box for each column except Year
+    # Create a search box for each column dynamically
     search_terms = {}
     for column in df.columns:
-        # if column != "Year":  # Skip Year since we handle it separately
-            search_terms[column] = st.sidebar.text_input(f"Search by {column}", "")
+        search_terms[column] = st.sidebar.text_input(f"Search by {column}", "")
     
     # Apply filters
     filtered_df = df.copy()
 
-    # Apply text-based filters for all columns except Year
     for column, search_term in search_terms.items():
         if search_term:  # Only apply filter if there's a search term
             filtered_df = filter_dataframe(filtered_df, column, search_term)
-    
-    # Apply dropdown filter for Year
-    filtered_df = filtered_df[filtered_df["Year"].isin(year_filter)]
     
     # Display filtered results
     st.subheader("Filtered Results")
