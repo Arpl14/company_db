@@ -51,19 +51,19 @@ def main():
     
     # Apply fuzzy filters for text-based columns
     if country_filter:
-        filtered_df = fuzzy_filter(filtered_df, "country", country_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Country", country_filter)
     if company_filter:
-        filtered_df = fuzzy_filter(filtered_df, "company", company_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Company", company_filter)
     if am_process_filter:
-        filtered_df = fuzzy_filter(filtered_df, "type_of_am_process", am_process_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Type fo AM process", am_process_filter)
     if material_filter:
-        filtered_df = fuzzy_filter(filtered_df, "type_of_material", material_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Type of Material", material_filter)
     if category_filter:
-        filtered_df = fuzzy_filter(filtered_df, "category", category_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Category", category_filter)
     if company_type_filter:
-        filtered_df = fuzzy_filter(filtered_df, "type_of_company", company_type_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Type of company", company_type_filter)
     if description_filter:
-        filtered_df = fuzzy_filter(filtered_df, "description", description_filter)
+        filtered_df = fuzzy_filter(filtered_df, "Description", description_filter)
     
     # # Apply numeric filters
     # filtered_df = filtered_df[
